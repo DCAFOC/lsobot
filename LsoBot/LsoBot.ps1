@@ -63,6 +63,8 @@ if ($dcsLogPath -match '\$env:USERPROFILE') {
 $points = "0.0"
 $pointScoring = $lsoConfig.pointScoring
 
+$advancedOutput = $lsoConfig.advancedOutput
+
 
 #Log Format Variables
 $info = "| INFO |"
@@ -436,28 +438,28 @@ for ($i = 1; $i -le $timeTarget; $i++) {
                     $getTakeoffEventPilot = $getTakeoffEventPilot -replace "^.*(?:takeoff,initiatorPilotName=)", ""
                     $getTakeoffEventPilot = $getTakeoffEventPilot -replace ",.*$", ""
                     $getTakeoffEventTime = Select-String -Path $dcsLogPath -Pattern $takeoffEventTimeRegex | Select-Object Matches -Last 1
-                        if ($getTakeoffEventTime.Matches.Value -le $trapTime+7) {
-                            Write-Output "$(Get-Timestamp) $info $lcReg Detected bolter, grading pass as Bolter" | Out-file $debugLog -append
-                                $Grade = $Grade -replace $rGRADE, $BOLTER
-                                $points = "2.5"
-                                $Grade = $Grade -replace '\s+', ' '
-                                $lockGrade = 1  
-                            }
-                        else {
-                            Write-Output "$(Get-Timestamp) $info $lcReg Did not detect bolter, grading pass as WO" | Out-file $debugLog -append
-                            $Grade = $Grade -replace $rGRADE, $WO
+                    if ($getTakeoffEventTime.Matches.Value -le $trapTime+7) {
+                        Write-Output "$(Get-Timestamp) $info $lcReg Detected bolter, grading pass as Bolter" | Out-file $debugLog -append
+                            $Grade = $Grade -replace $rGRADE, $BOLTER
                             $points = "2.5"
                             $Grade = $Grade -replace '\s+', ' '
-                            $lockGrade = 1
-                            }
+                            $lockGrade = 1  
                         }
-                        else {
-                            Write-Output "$(Get-Timestamp) $info $lcReg Did not detect bolter, grading pass as WO" | Out-file $debugLog -append
-                            $Grade = $Grade -replace $rGRADE, $WO
-                            $points = "2.5"
-                            $Grade = $Grade -replace '\s+', ' '
-                            $lockGrade = 1
-                        }
+                    else {
+                        Write-Output "$(Get-Timestamp) $info $lcReg Did not detect bolter, grading pass as WO" | Out-file $debugLog -append
+                        $Grade = $Grade -replace $rGRADE, $WO
+                        $points = "2.5"
+                        $Grade = $Grade -replace '\s+', ' '
+                        $lockGrade = 1
+                    }
+                }
+                else {
+                    Write-Output "$(Get-Timestamp) $info $lcReg Did not detect bolter, grading pass as WO" | Out-file $debugLog -append
+                    $Grade = $Grade -replace $rGRADE, $WO
+                    $points = "2.5"
+                    $Grade = $Grade -replace '\s+', ' '
+                    $lockGrade = 1
+                }
             }
 
             <#  Check for an Own Wave Off in the grade. If an own wave off is detected, do the bolter detection process#>
@@ -473,29 +475,29 @@ for ($i = 1; $i -le $timeTarget; $i++) {
                         $getTakeoffEventPilot = $getTakeoffEventPilot -replace "^.*(?:takeoff,initiatorPilotName=)", ""
                         $getTakeoffEventPilot = $getTakeoffEventPilot -replace ",.*$", ""
                         $getTakeoffEventTime = Select-String -Path $dcsLogPath -Pattern $takeoffEventTimeRegex | Select-Object Matches -Last 1
-                            if ($getTakeoffEventTime.Matches.Value -le $trapTime+7) {
-                                    Write-Output "$(Get-Timestamp) $info $lcReg Detected bolter, grading pass as Bolter" | Out-file $debugLog -append
-                                    $Grade = $Grade -replace $rGRADE, $BOLTER
-                                    $points = "2.5"
-                                    $Grade = $Grade -replace '\s+', ' '
-                                    $lockGrade = 1  
-                                    }
-                            else {
-                                Write-Output "$(Get-Timestamp) $info $lcReg Did not detect bolter, grading pass as OWO" | Out-file $debugLog -append
-                                $Grade = $Grade -replace $rGRADE, $OWO
+                        if ($getTakeoffEventTime.Matches.Value -le $trapTime+7) {
+                                Write-Output "$(Get-Timestamp) $info $lcReg Detected bolter, grading pass as Bolter" | Out-file $debugLog -append
+                                $Grade = $Grade -replace $rGRADE, $BOLTER
                                 $points = "2.5"
                                 $Grade = $Grade -replace '\s+', ' '
-                                $lockGrade = 1       
+                                $lockGrade = 1  
                                 }
-                            }
                         else {
-                            Write-Output "$(Get-Timestamp) $info $lcReg Did not detect bolter, grading pass as WO" | Out-file $debugLog -append
+                            Write-Output "$(Get-Timestamp) $info $lcReg Did not detect bolter, grading pass as OWO" | Out-file $debugLog -append
                             $Grade = $Grade -replace $rGRADE, $OWO
                             $points = "2.5"
                             $Grade = $Grade -replace '\s+', ' '
-                            $lockGrade = 1
+                            $lockGrade = 1       
                             }
                         }
+                    else {
+                        Write-Output "$(Get-Timestamp) $info $lcReg Did not detect bolter, grading pass as WO" | Out-file $debugLog -append
+                        $Grade = $Grade -replace $rGRADE, $OWO
+                        $points = "2.5"
+                        $Grade = $Grade -replace '\s+', ' '
+                        $lockGrade = 1
+                    }
+                }
             }
 
             <#  Check for a WO(AFU) that did not result in a landing allegedly, and make sure there was no take off, in which case, make it a bolter. #>
@@ -511,30 +513,30 @@ for ($i = 1; $i -le $timeTarget; $i++) {
                         $getTakeoffEventPilot = $getTakeoffEventPilot -replace "^.*(?:takeoff,initiatorPilotName=)", ""
                         $getTakeoffEventPilot = $getTakeoffEventPilot -replace ",.*$", ""
                         $getTakeoffEventTime = Select-String -Path $dcsLogPath -Pattern $takeoffEventTimeRegex | Select-Object Matches -Last 1
-                            if ($getTakeoffEventTime.Matches.Value -le $trapTime+7) {
-                                    Write-Output "$(Get-Timestamp) $info $lcReg Detected bolter, grading pass as Bolter" | Out-file $debugLog -append
-                                    $Grade = $Grade -replace $rGRADE, $BOLTER
-                                    $points = "2.5"
-                                    $Grade = $Grade -replace '\s+', ' '
-                                    $lockGrade = 1  
-                                }
-                            else {
-                                Write-Output "$(Get-Timestamp) $info $lcReg Did not detect bolter, grading pass as WO" | Out-file $debugLog -append
-                                $Grade = $Grade -replace $rGRADE, $WO
+                        if ($getTakeoffEventTime.Matches.Value -le $trapTime+7) {
+                                Write-Output "$(Get-Timestamp) $info $lcReg Detected bolter, grading pass as Bolter" | Out-file $debugLog -append
+                                $Grade = $Grade -replace $rGRADE, $BOLTER
                                 $points = "2.5"
                                 $Grade = $Grade -replace '\s+', ' '
-                                $lockGrade = 1
+                                $lockGrade = 1  
                             }
-                            
-                        }
                         else {
                             Write-Output "$(Get-Timestamp) $info $lcReg Did not detect bolter, grading pass as WO" | Out-file $debugLog -append
-                            $Grade = $Grade -replace $rGRADE, $OWO
+                            $Grade = $Grade -replace $rGRADE, $WO
                             $points = "2.5"
                             $Grade = $Grade -replace '\s+', ' '
                             $lockGrade = 1
                         }
+                            
                     }
+                    else {
+                        Write-Output "$(Get-Timestamp) $info $lcReg Did not detect bolter, grading pass as WO" | Out-file $debugLog -append
+                        $Grade = $Grade -replace $rGRADE, $OWO
+                        $points = "2.5"
+                        $Grade = $Grade -replace '\s+', ' '
+                        $lockGrade = 1
+                    }
+                }
             }
 
             # Check for automatic Cuts
@@ -762,9 +764,36 @@ for ($i = 1; $i -le $timeTarget; $i++) {
 
             #Create the webhook and send it
             else {
+                if ($advancedOutput) {
+                    $missionTime = ""
+                    $acType = ""
+                    $place = ""
+                    $tig = ""
+                    Write-Output "Waiting for Landing_Data..." | Out-file $debugLog -append
+                    while ($true) {
+                        $landingEventContext = Select-String -Path $dcsLogPath -Pattern $lsoEventRegex -Context 0,12 | Select-Object -Index $logTrapIndex | Out-String
+                        if ($landingEventContext -match ".*Landing_Data.*") {
+                            $landingEventContext -match "(?s)Landing_Data.*?UnitType:(.*?),Player-Name:"+[regex]::escape($Pilot)+",Place:(.*?),TIG:(.*?),MissionTime:(.*?)\)"
+                            $matches | Out-String | Out-File $debugLog -append
+                            $acType = $matches[1]
+                            $place = $matches[2]
+                            $tig = $matches[3]
+                            $missionTime = $matches[4]
+                            break
+                        }
+                    }
+                }
+
+
                 $logString = ""
-                if ($pointScoring) {
+                if ($pointScoring -and $advancedOutput) {
+                    $logString = "$trapTime,$Pilot,$points,$acType,$place,$tig,$missionTime,"
+                }
+                elseif ($pointScoring) {
                     $logString = "$trapTime,$Pilot,$points,"
+                }
+                elseif ($advancedOutput) {
+                    $logString = "$trapTime,$Pilot,$acType,$place,$tig,$missionTime,"
                 }
                 else {
                     $logString = "$trapTime,$Pilot,"
@@ -824,8 +853,7 @@ for ($i = 1; $i -le $timeTarget; $i++) {
                     }
 
                     #Create embed object
-                    
-                    if ($pointScoring) {
+                    if ($pointScoring -and $advancedOutput) {
                         $script:hookEmbedObject = [PSCustomObject]@{
 
                             #title       = $title
@@ -844,6 +872,99 @@ for ($i = 1; $i -le $timeTarget; $i++) {
                             [PSCustomObject]@{ 
                                 name = "**Points**"
                                 value = $points
+                                inline = $true
+                                }
+                            [PSCustomObject]@{ 
+                                name = "**Airframe**"
+                                value = $acType
+                                inline = $true
+                                }
+                            [PSCustomObject]@{ 
+                                name = "**Carrier**"
+                                value = $place
+                                inline = $true
+                                }
+                            [PSCustomObject]@{ 
+                                name = "**TiG**"
+                                value = $tig
+                                inline = $true
+                                }
+                            [PSCustomObject]@{ 
+                                name = "**Mission Time**"
+                                value = $missionTime
+                                inline = $true
+                                }
+                            [PSCustomObject]@{ 
+                                name = "**Comments**"
+                                value = $lsoComments
+                                inline = $true
+                                }
+                            )
+                        }
+                    }
+                    elseif ($pointScoring) {
+                        $script:hookEmbedObject = [PSCustomObject]@{
+
+                            #title       = $title
+                            color       = $embedColor
+                            fields      = @(
+                            [PSCustomObject]@{ 
+                                name = "**Pilot**"
+                                value = $Pilot
+                                inline = $true
+                                }
+                            [PSCustomObject]@{ 
+                                name = "**Grade**"
+                                value = $Grade
+                                inline = $true
+                                }
+                            [PSCustomObject]@{ 
+                                name = "**Points**"
+                                value = $points
+                                inline = $true
+                                }
+                            [PSCustomObject]@{ 
+                                name = "**Comments**"
+                                value = $lsoComments
+                                inline = $true
+                                }
+                            )
+                        }
+                    }
+                    elseif ($advancedOutput) {
+                        $script:hookEmbedObject = [PSCustomObject]@{
+
+                            #title       = $title
+                            color       = $embedColor
+                            fields      = @(
+                            [PSCustomObject]@{ 
+                                name = "**Pilot**"
+                                value = $Pilot
+                                inline = $true
+                                }
+                            [PSCustomObject]@{ 
+                                name = "**Grade**"
+                                value = $Grade
+                                inline = $true
+                                }
+                            [PSCustomObject]@{ 
+                                name = "**Airframe**"
+                                value = $acType
+                                inline = $true
+                                }
+                            [PSCustomObject]@{ 
+                                name = "**Carrier**"
+                                value = $place
+                                inline = $true
+                                }
+                            [PSCustomObject]@{ 
+                                name = "**TiG**"
+                                value = $tig
+                                inline = $true
+                                }
+                            [PSCustomObject]@{ 
+                                name = "**Mission Time**"
+                                value = $missionTime
                                 inline = $true
                                 }
                             [PSCustomObject]@{ 
@@ -908,8 +1029,14 @@ for ($i = 1; $i -le $timeTarget; $i++) {
 
                 else {
                     $logString = ""
-                    if ($pointScoring) {
+                    if ($pointScoring -and $advancedOutput) {
+                        $logString = "$trapTime,$Pilot,$points,$acType,$place,$tig,$missionTime,"
+                    }
+                    elseif ($pointScoring) {
                         $logString = "$trapTime,$Pilot,$points,"
+                    }
+                    elseif ($advancedOutput) {
+                        $logString = "$trapTime,$Pilot,$acType,$place,$tig,$missionTime,"
                     }
                     else {
                         $logString = "$trapTime,$Pilot,"
@@ -919,8 +1046,14 @@ for ($i = 1; $i -le $timeTarget; $i++) {
 
                     #Message content
                     $messageContent = ""
-                    if ($pointScoring) {
+                    if ($pointScoring -and $advancedOutput) {
+                        $messageContent = -join("**Pilot: **", $Pilot, " **Points:** ", $points, " **Grade:** ", $Grade, " **Airframe:** ", $acType, " **Carrier:** ", $place, " **TiG:** ", $tig, " **Mission Time:** ", $missionTime)
+                    }
+                    elseif ($pointScoring) {
                         $messageContent = -join("**Pilot: **", $Pilot, " **Points:** ", $points, " **Grade:** ", $Grade  )
+                    }
+                    elseif ($advancedOutput) {
+                        $messageContent = -join("**Pilot: **", $Pilot, " **Grade:** ", $Grade, " **Airframe:** ", $acType, " **Carrier:** ", $place, " **TiG:** ", $tig, " **Mission Time:** ", $missionTime)
                     }
                     else {
                         $messageContent = -join("**Pilot: **", $Pilot, " **Grade:** ", $Grade  )
